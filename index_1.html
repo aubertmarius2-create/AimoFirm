@@ -1,0 +1,1712 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>AimoFirm — Prop Firm</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@300;400;500;700&family=Fraunces:opsz,wght@9..144,400;9..144,600;9..144,900&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --bg: #0a0a0a;
+    --bg-elev: #111111;
+    --bg-card: #161616;
+    --border: #1f1f1f;
+    --border-bright: #2a2a2a;
+    --text: #e8e8e8;
+    --text-dim: #888;
+    --text-muted: #555;
+    --accent: #d4ff3a;
+    --accent-dim: #a8cc2e;
+    --green: #4ade80;
+    --red: #f87171;
+    --yellow: #fbbf24;
+    --mono: 'JetBrains Mono', ui-monospace, monospace;
+    --display: 'Fraunces', Georgia, serif;
+  }
+
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+
+  html, body {
+    background: var(--bg);
+    color: var(--text);
+    font-family: var(--mono);
+    font-size: 14px;
+    line-height: 1.5;
+    -webkit-font-smoothing: antialiased;
+    overflow-x: hidden;
+  }
+
+  body::before {
+    content: '';
+    position: fixed;
+    inset: 0;
+    background-image:
+      radial-gradient(circle at 20% 0%, rgba(212, 255, 58, 0.04) 0%, transparent 40%),
+      radial-gradient(circle at 80% 100%, rgba(212, 255, 58, 0.03) 0%, transparent 40%);
+    pointer-events: none;
+    z-index: 0;
+  }
+
+  body::after {
+    content: '';
+    position: fixed;
+    inset: 0;
+    background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='3' /%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)' opacity='0.3'/%3E%3C/svg%3E");
+    opacity: 0.025;
+    pointer-events: none;
+    z-index: 1;
+  }
+
+  .app { position: relative; z-index: 2; }
+
+  /* ============ DEMO BANNER ============ */
+  .demo-banner {
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    background: repeating-linear-gradient(
+      45deg,
+      #fbbf24,
+      #fbbf24 10px,
+      #000 10px,
+      #000 20px
+    );
+    padding: 2px;
+    z-index: 200;
+  }
+  .demo-banner-inner {
+    background: #fbbf24;
+    color: #000;
+    text-align: center;
+    padding: 6px 16px;
+    font-family: var(--mono);
+    font-size: 11px;
+    font-weight: 700;
+    letter-spacing: 0.2em;
+    text-transform: uppercase;
+  }
+  .demo-banner-inner span {
+    background: #000;
+    color: #fbbf24;
+    padding: 2px 8px;
+    margin: 0 6px;
+  }
+  /* Décaler le contenu pour ne pas être caché par le bandeau */
+  body { padding-top: 32px; }
+  .view-switcher { top: 48px; }
+  .sidebar { top: 102px !important; height: calc(100vh - 102px) !important; }
+  @media (max-width: 600px) {
+    .demo-banner-inner { font-size: 9px; padding: 6px 8px; letter-spacing: 0.1em; }
+  }
+
+  /* ============ TOP NAV (toggle entre les vues) ============ */
+  .view-switcher {
+    position: fixed;
+    top: 16px;
+    left: 50%;
+    transform: translateX(-50%);
+    background: rgba(20, 20, 20, 0.85);
+    backdrop-filter: blur(12px);
+    border: 1px solid var(--border-bright);
+    border-radius: 999px;
+    padding: 4px;
+    display: flex;
+    gap: 2px;
+    z-index: 100;
+    box-shadow: 0 8px 32px rgba(0,0,0,0.6);
+  }
+  .view-switcher button {
+    background: transparent;
+    border: none;
+    color: var(--text-dim);
+    font-family: var(--mono);
+    font-size: 11px;
+    text-transform: uppercase;
+    letter-spacing: 0.1em;
+    padding: 8px 16px;
+    border-radius: 999px;
+    cursor: pointer;
+    transition: all 0.2s;
+    font-weight: 500;
+  }
+  .view-switcher button:hover { color: var(--text); }
+  .view-switcher button.active {
+    background: var(--accent);
+    color: #000;
+    font-weight: 700;
+  }
+
+  .view { display: none; min-height: 100vh; }
+  .view.active { display: block; }
+
+  /* ============ VIEW 1 : LANDING ============ */
+  .landing {
+    padding: 80px 40px 40px;
+    max-width: 1400px;
+    margin: 0 auto;
+  }
+
+  .landing-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding-bottom: 60px;
+    border-bottom: 1px solid var(--border);
+  }
+  .logo {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+  }
+  .logo-mark {
+    width: 36px;
+    height: 36px;
+    position: relative;
+    flex-shrink: 0;
+  }
+  .logo-mark svg {
+    width: 100%;
+    height: 100%;
+  }
+  .logo-text {
+    font-family: var(--display);
+    font-weight: 900;
+    font-size: 22px;
+    letter-spacing: -0.02em;
+  }
+  .logo-text em {
+    color: var(--accent);
+    font-style: normal;
+  }
+  .nav-links {
+    display: flex;
+    gap: 32px;
+    font-size: 12px;
+    text-transform: uppercase;
+    letter-spacing: 0.1em;
+  }
+  .nav-links a { color: var(--text-dim); text-decoration: none; transition: color 0.2s; }
+  .nav-links a:hover { color: var(--accent); }
+
+  .hero {
+    padding: 100px 0 80px;
+    display: grid;
+    grid-template-columns: 1.4fr 1fr;
+    gap: 80px;
+    align-items: center;
+  }
+  .hero-eyebrow {
+    display: inline-flex;
+    align-items: center;
+    gap: 10px;
+    font-size: 11px;
+    text-transform: uppercase;
+    letter-spacing: 0.2em;
+    color: var(--accent);
+    margin-bottom: 32px;
+    padding: 6px 12px;
+    border: 1px solid var(--accent-dim);
+    border-radius: 4px;
+    background: rgba(212, 255, 58, 0.05);
+  }
+  .hero-eyebrow::before {
+    content: '';
+    width: 6px;
+    height: 6px;
+    background: var(--accent);
+    border-radius: 50%;
+    animation: pulse 2s infinite;
+  }
+  @keyframes pulse {
+    0%, 100% { opacity: 1; box-shadow: 0 0 0 0 var(--accent); }
+    50% { opacity: 0.6; box-shadow: 0 0 0 6px transparent; }
+  }
+  .hero h1 {
+    font-family: var(--display);
+    font-weight: 400;
+    font-size: clamp(48px, 7vw, 96px);
+    line-height: 0.95;
+    letter-spacing: -0.04em;
+    margin-bottom: 32px;
+  }
+  .hero h1 em {
+    font-style: italic;
+    font-weight: 900;
+    color: var(--accent);
+  }
+  .hero h1 .strike {
+    text-decoration: line-through;
+    text-decoration-thickness: 3px;
+    color: var(--text-muted);
+  }
+  .hero-sub {
+    color: var(--text-dim);
+    font-size: 16px;
+    line-height: 1.6;
+    max-width: 520px;
+    margin-bottom: 40px;
+  }
+  .hero-cta {
+    display: flex;
+    gap: 16px;
+    align-items: center;
+  }
+  .btn {
+    font-family: var(--mono);
+    font-size: 13px;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.1em;
+    padding: 16px 28px;
+    border: none;
+    cursor: pointer;
+    transition: all 0.2s;
+    text-decoration: none;
+    display: inline-flex;
+    align-items: center;
+    gap: 10px;
+  }
+  .btn-primary {
+    background: var(--accent);
+    color: #000;
+  }
+  .btn-primary:hover {
+    background: #fff;
+    transform: translateY(-2px);
+  }
+  .btn-ghost {
+    background: transparent;
+    color: var(--text);
+    border: 1px solid var(--border-bright);
+  }
+  .btn-ghost:hover {
+    border-color: var(--accent);
+    color: var(--accent);
+  }
+
+  .hero-visual {
+    position: relative;
+    aspect-ratio: 1;
+    background: var(--bg-card);
+    border: 1px solid var(--border-bright);
+    overflow: hidden;
+  }
+  .hero-visual::before {
+    content: 'LIVE';
+    position: absolute;
+    top: 16px;
+    left: 16px;
+    font-size: 10px;
+    color: var(--red);
+    background: rgba(248, 113, 113, 0.1);
+    padding: 4px 8px;
+    z-index: 2;
+    letter-spacing: 0.2em;
+  }
+  .ticker-grid {
+    position: absolute;
+    inset: 0;
+    padding: 50px 24px 24px;
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 1px;
+    background: var(--border);
+  }
+  .ticker {
+    background: var(--bg-card);
+    padding: 16px;
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+  }
+  .ticker-symbol {
+    font-size: 11px;
+    color: var(--text-dim);
+    letter-spacing: 0.1em;
+  }
+  .ticker-price {
+    font-size: 18px;
+    font-weight: 700;
+  }
+  .ticker-change {
+    font-size: 11px;
+    font-weight: 500;
+  }
+  .ticker-change.up { color: var(--green); }
+  .ticker-change.down { color: var(--red); }
+
+  .stats-strip {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    border-top: 1px solid var(--border);
+    border-bottom: 1px solid var(--border);
+    margin: 60px 0;
+  }
+  .stat {
+    padding: 32px 24px;
+    border-right: 1px solid var(--border);
+  }
+  .stat:last-child { border-right: none; }
+  .stat-label {
+    font-size: 10px;
+    text-transform: uppercase;
+    letter-spacing: 0.2em;
+    color: var(--text-dim);
+    margin-bottom: 12px;
+  }
+  .stat-value {
+    font-family: var(--display);
+    font-size: 36px;
+    font-weight: 600;
+    letter-spacing: -0.02em;
+  }
+  .stat-value em {
+    color: var(--accent);
+    font-style: normal;
+  }
+
+  /* Pricing */
+  .pricing-section {
+    padding: 80px 0;
+  }
+  .section-title {
+    font-family: var(--display);
+    font-size: clamp(36px, 5vw, 64px);
+    font-weight: 400;
+    letter-spacing: -0.03em;
+    margin-bottom: 60px;
+    line-height: 1;
+  }
+  .section-title em {
+    font-style: italic;
+    color: var(--accent);
+  }
+  .pricing-grid {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 1px;
+    background: var(--border);
+    border: 1px solid var(--border);
+  }
+  .price-card {
+    background: var(--bg-card);
+    padding: 40px 32px;
+    position: relative;
+    transition: background 0.2s;
+  }
+  .price-card:hover { background: var(--bg-elev); }
+  .price-card.featured {
+    background: var(--bg-elev);
+    border: 2px solid var(--accent);
+    box-shadow: 0 0 60px rgba(212, 255, 58, 0.1);
+  }
+  .price-badge {
+    position: absolute;
+    top: -1px;
+    right: 24px;
+    background: var(--accent);
+    color: #000;
+    font-size: 10px;
+    font-weight: 700;
+    letter-spacing: 0.15em;
+    padding: 6px 12px;
+  }
+  .price-tier {
+    font-size: 11px;
+    text-transform: uppercase;
+    letter-spacing: 0.2em;
+    color: var(--text-dim);
+    margin-bottom: 16px;
+  }
+  .price-amount {
+    font-family: var(--display);
+    font-size: 56px;
+    font-weight: 600;
+    letter-spacing: -0.03em;
+    line-height: 1;
+    margin-bottom: 8px;
+  }
+  .price-amount sup {
+    font-size: 24px;
+    color: var(--text-dim);
+    margin-right: 4px;
+  }
+  .price-account {
+    color: var(--text-dim);
+    margin-bottom: 32px;
+    padding-bottom: 24px;
+    border-bottom: 1px solid var(--border);
+  }
+  .price-features {
+    list-style: none;
+    margin-bottom: 32px;
+  }
+  .price-features li {
+    padding: 10px 0;
+    font-size: 13px;
+    display: flex;
+    align-items: flex-start;
+    gap: 12px;
+    color: var(--text);
+  }
+  .price-features li::before {
+    content: '→';
+    color: var(--accent);
+    font-weight: 700;
+  }
+  .price-card .btn {
+    width: 100%;
+    justify-content: center;
+  }
+
+  /* Features grid */
+  .features {
+    padding: 80px 0;
+    border-top: 1px solid var(--border);
+  }
+  .feature-grid {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 32px;
+  }
+  .feature {
+    padding: 32px;
+    background: var(--bg-card);
+    border-left: 2px solid var(--border-bright);
+    transition: border-color 0.2s;
+  }
+  .feature:hover { border-left-color: var(--accent); }
+  .feature-num {
+    font-family: var(--display);
+    font-size: 14px;
+    color: var(--accent);
+    margin-bottom: 16px;
+    font-weight: 600;
+  }
+  .feature h3 {
+    font-family: var(--display);
+    font-weight: 600;
+    font-size: 22px;
+    margin-bottom: 12px;
+    letter-spacing: -0.01em;
+  }
+  .feature p {
+    color: var(--text-dim);
+    font-size: 13px;
+    line-height: 1.7;
+  }
+
+  .footer {
+    margin-top: 80px;
+    padding: 40px 0;
+    border-top: 1px solid var(--border);
+    display: flex;
+    justify-content: space-between;
+    color: var(--text-muted);
+    font-size: 11px;
+    text-transform: uppercase;
+    letter-spacing: 0.1em;
+  }
+
+  /* ============ VIEW 2 : TRADER DASHBOARD ============ */
+  .trader-app {
+    display: grid;
+    grid-template-columns: 220px 1fr;
+    min-height: 100vh;
+    padding-top: 70px;
+  }
+
+  .sidebar {
+    background: var(--bg-elev);
+    border-right: 1px solid var(--border);
+    padding: 32px 0;
+    position: sticky;
+    top: 70px;
+    height: calc(100vh - 70px);
+  }
+  .sidebar-section {
+    padding: 0 24px;
+    margin-bottom: 32px;
+  }
+  .sidebar-label {
+    font-size: 10px;
+    text-transform: uppercase;
+    letter-spacing: 0.2em;
+    color: var(--text-muted);
+    margin-bottom: 12px;
+  }
+  .sidebar-link {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    padding: 10px 24px;
+    color: var(--text-dim);
+    text-decoration: none;
+    font-size: 13px;
+    transition: all 0.15s;
+    border-left: 2px solid transparent;
+  }
+  .sidebar-link:hover {
+    color: var(--text);
+    background: rgba(255,255,255,0.02);
+  }
+  .sidebar-link.active {
+    color: var(--accent);
+    border-left-color: var(--accent);
+    background: rgba(212, 255, 58, 0.05);
+  }
+  .sidebar-link span:first-child {
+    font-family: var(--mono);
+    color: var(--text-muted);
+    font-size: 11px;
+  }
+  .sidebar-link.active span:first-child { color: var(--accent); }
+
+  .trader-main {
+    padding: 32px 40px;
+    overflow-x: hidden;
+  }
+
+  .page-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-end;
+    margin-bottom: 32px;
+    padding-bottom: 24px;
+    border-bottom: 1px solid var(--border);
+  }
+  .page-title {
+    font-family: var(--display);
+    font-size: 36px;
+    font-weight: 400;
+    letter-spacing: -0.02em;
+  }
+  .page-title em {
+    font-style: italic;
+    color: var(--accent);
+  }
+  .page-subtitle {
+    color: var(--text-dim);
+    font-size: 13px;
+    margin-top: 4px;
+  }
+  .account-pill {
+    display: flex;
+    gap: 16px;
+    align-items: center;
+    background: var(--bg-card);
+    border: 1px solid var(--border-bright);
+    padding: 12px 20px;
+  }
+  .account-pill-label {
+    font-size: 10px;
+    color: var(--text-dim);
+    text-transform: uppercase;
+    letter-spacing: 0.15em;
+  }
+  .account-pill-value {
+    font-weight: 700;
+    font-size: 14px;
+  }
+  .status-dot {
+    width: 8px;
+    height: 8px;
+    border-radius: 50%;
+    background: var(--green);
+    box-shadow: 0 0 8px var(--green);
+  }
+
+  .balance-block {
+    display: grid;
+    grid-template-columns: 1.4fr 1fr;
+    gap: 24px;
+    margin-bottom: 32px;
+  }
+  .balance-main {
+    background: var(--bg-card);
+    border: 1px solid var(--border);
+    padding: 32px;
+    position: relative;
+    overflow: hidden;
+  }
+  .balance-main::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    right: 0;
+    width: 160px;
+    height: 160px;
+    background: radial-gradient(circle, rgba(212,255,58,0.08) 0%, transparent 70%);
+  }
+  .balance-eyebrow {
+    font-size: 10px;
+    text-transform: uppercase;
+    letter-spacing: 0.2em;
+    color: var(--text-dim);
+    margin-bottom: 16px;
+  }
+  .balance-amount {
+    font-family: var(--display);
+    font-weight: 600;
+    font-size: 64px;
+    letter-spacing: -0.03em;
+    line-height: 1;
+    margin-bottom: 12px;
+  }
+  .balance-amount sup {
+    font-size: 24px;
+    color: var(--text-dim);
+    font-weight: 400;
+    margin-right: 8px;
+  }
+  .balance-change {
+    display: flex;
+    gap: 16px;
+    align-items: center;
+    font-size: 13px;
+  }
+  .balance-change .up { color: var(--green); font-weight: 700; }
+  .balance-change .meta { color: var(--text-dim); }
+
+  .balance-side {
+    display: grid;
+    gap: 1px;
+    background: var(--border);
+    border: 1px solid var(--border);
+  }
+  .balance-side-card {
+    background: var(--bg-card);
+    padding: 20px 24px;
+  }
+  .balance-side-label {
+    font-size: 10px;
+    text-transform: uppercase;
+    letter-spacing: 0.2em;
+    color: var(--text-dim);
+    margin-bottom: 8px;
+  }
+  .balance-side-value {
+    font-size: 22px;
+    font-weight: 700;
+  }
+  .balance-side-meta {
+    font-size: 11px;
+    color: var(--text-muted);
+    margin-top: 4px;
+  }
+
+  /* Chart */
+  .chart-card {
+    background: var(--bg-card);
+    border: 1px solid var(--border);
+    padding: 28px;
+    margin-bottom: 32px;
+  }
+  .chart-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 24px;
+  }
+  .chart-title {
+    font-family: var(--display);
+    font-size: 22px;
+    font-weight: 600;
+    letter-spacing: -0.01em;
+  }
+  .chart-tabs {
+    display: flex;
+    gap: 4px;
+  }
+  .chart-tab {
+    background: transparent;
+    border: 1px solid var(--border);
+    color: var(--text-dim);
+    padding: 6px 12px;
+    font-family: var(--mono);
+    font-size: 11px;
+    cursor: pointer;
+    transition: all 0.15s;
+  }
+  .chart-tab:hover { border-color: var(--border-bright); color: var(--text); }
+  .chart-tab.active {
+    background: var(--accent);
+    color: #000;
+    border-color: var(--accent);
+    font-weight: 700;
+  }
+
+  .chart-area {
+    height: 280px;
+    position: relative;
+  }
+
+  /* Rules grid */
+  .rules-grid {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 1px;
+    background: var(--border);
+    border: 1px solid var(--border);
+    margin-bottom: 32px;
+  }
+  .rule {
+    background: var(--bg-card);
+    padding: 24px;
+    position: relative;
+  }
+  .rule-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 16px;
+  }
+  .rule-name {
+    font-size: 11px;
+    text-transform: uppercase;
+    letter-spacing: 0.15em;
+    color: var(--text-dim);
+  }
+  .rule-status {
+    font-size: 9px;
+    padding: 3px 8px;
+    letter-spacing: 0.15em;
+    text-transform: uppercase;
+    font-weight: 700;
+  }
+  .rule-status.ok { background: rgba(74, 222, 128, 0.15); color: var(--green); }
+  .rule-status.warn { background: rgba(251, 191, 36, 0.15); color: var(--yellow); }
+  .rule-value {
+    font-size: 24px;
+    font-weight: 700;
+    margin-bottom: 4px;
+  }
+  .rule-meta {
+    font-size: 11px;
+    color: var(--text-muted);
+    margin-bottom: 12px;
+  }
+  .rule-bar {
+    height: 4px;
+    background: var(--border-bright);
+    overflow: hidden;
+  }
+  .rule-bar-fill {
+    height: 100%;
+    background: var(--accent);
+    transition: width 0.5s;
+  }
+  .rule-bar-fill.warn { background: var(--yellow); }
+
+  /* Trades table */
+  .table-card {
+    background: var(--bg-card);
+    border: 1px solid var(--border);
+  }
+  .table-card-header {
+    padding: 20px 24px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    border-bottom: 1px solid var(--border);
+  }
+  .table-card-title {
+    font-family: var(--display);
+    font-size: 18px;
+    font-weight: 600;
+  }
+  table {
+    width: 100%;
+    border-collapse: collapse;
+  }
+  thead tr {
+    border-bottom: 1px solid var(--border);
+  }
+  th {
+    text-align: left;
+    padding: 14px 24px;
+    font-size: 10px;
+    text-transform: uppercase;
+    letter-spacing: 0.15em;
+    color: var(--text-muted);
+    font-weight: 500;
+  }
+  td {
+    padding: 16px 24px;
+    border-bottom: 1px solid var(--border);
+    font-size: 13px;
+  }
+  tbody tr:last-child td { border-bottom: none; }
+  tbody tr:hover { background: rgba(255,255,255,0.015); }
+  .symbol-cell {
+    font-weight: 700;
+    letter-spacing: 0.05em;
+  }
+  .pnl.up { color: var(--green); font-weight: 700; }
+  .pnl.down { color: var(--red); font-weight: 700; }
+  .side-tag {
+    font-size: 10px;
+    padding: 3px 8px;
+    letter-spacing: 0.1em;
+    font-weight: 700;
+  }
+  .side-tag.long { background: rgba(74, 222, 128, 0.15); color: var(--green); }
+  .side-tag.short { background: rgba(248, 113, 113, 0.15); color: var(--red); }
+
+  /* ============ VIEW 3 : ADMIN ============ */
+  .admin-grid {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 1px;
+    background: var(--border);
+    margin-bottom: 32px;
+  }
+  .admin-stat {
+    background: var(--bg-card);
+    padding: 28px 24px;
+  }
+  .admin-stat-label {
+    font-size: 10px;
+    text-transform: uppercase;
+    letter-spacing: 0.2em;
+    color: var(--text-dim);
+    margin-bottom: 12px;
+  }
+  .admin-stat-value {
+    font-family: var(--display);
+    font-size: 38px;
+    font-weight: 600;
+    letter-spacing: -0.02em;
+    line-height: 1;
+    margin-bottom: 8px;
+  }
+  .admin-stat-trend {
+    font-size: 11px;
+    font-weight: 700;
+  }
+  .admin-stat-trend.up { color: var(--green); }
+  .admin-stat-trend.down { color: var(--red); }
+
+  .admin-twocol {
+    display: grid;
+    grid-template-columns: 1.2fr 1fr;
+    gap: 24px;
+    margin-bottom: 32px;
+  }
+
+  .payout-list {
+    background: var(--bg-card);
+    border: 1px solid var(--border);
+  }
+  .payout-list-header {
+    padding: 20px 24px;
+    border-bottom: 1px solid var(--border);
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+  }
+  .payout-row {
+    padding: 16px 24px;
+    display: grid;
+    grid-template-columns: 1fr 1fr 1fr auto;
+    gap: 16px;
+    align-items: center;
+    border-bottom: 1px solid var(--border);
+    font-size: 13px;
+  }
+  .payout-row:last-child { border-bottom: none; }
+  .payout-trader {
+    font-weight: 700;
+  }
+  .payout-trader-id {
+    color: var(--text-muted);
+    font-size: 11px;
+  }
+  .payout-amount {
+    font-weight: 700;
+  }
+  .payout-meta {
+    color: var(--text-dim);
+    font-size: 11px;
+  }
+  .payout-action {
+    background: var(--accent);
+    color: #000;
+    border: none;
+    padding: 8px 14px;
+    font-family: var(--mono);
+    font-size: 10px;
+    font-weight: 700;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    cursor: pointer;
+  }
+  .payout-action.deny {
+    background: transparent;
+    color: var(--text-dim);
+    border: 1px solid var(--border-bright);
+  }
+
+  .funnel-card {
+    background: var(--bg-card);
+    border: 1px solid var(--border);
+    padding: 24px;
+  }
+  .funnel-stage {
+    display: grid;
+    grid-template-columns: 1fr auto;
+    gap: 12px;
+    align-items: center;
+    margin-bottom: 16px;
+  }
+  .funnel-label {
+    font-size: 12px;
+  }
+  .funnel-bar {
+    grid-column: 1 / 3;
+    height: 32px;
+    background: var(--border);
+    position: relative;
+    overflow: hidden;
+  }
+  .funnel-bar-fill {
+    height: 100%;
+    background: linear-gradient(90deg, var(--accent), var(--accent-dim));
+    display: flex;
+    align-items: center;
+    padding: 0 12px;
+    font-size: 11px;
+    font-weight: 700;
+    color: #000;
+  }
+
+  /* Responsive */
+  @media (max-width: 1024px) {
+    .hero { grid-template-columns: 1fr; gap: 40px; }
+    .pricing-grid { grid-template-columns: 1fr; }
+    .rules-grid, .admin-grid { grid-template-columns: repeat(2, 1fr); }
+    .feature-grid { grid-template-columns: 1fr; }
+    .balance-block, .admin-twocol { grid-template-columns: 1fr; }
+    .trader-app { grid-template-columns: 1fr; }
+    .sidebar { display: none; }
+    .stats-strip { grid-template-columns: repeat(2, 1fr); }
+  }
+  @media (max-width: 600px) {
+    .landing { padding: 80px 20px 40px; }
+    .trader-main { padding: 24px 20px; }
+    .nav-links { display: none; }
+    .rules-grid, .admin-grid { grid-template-columns: 1fr; }
+    .stats-strip { grid-template-columns: 1fr; }
+    .page-header { flex-direction: column; align-items: flex-start; gap: 16px; }
+  }
+
+  /* Subtle entrance animation */
+  .view.active .anim-in {
+    animation: slideUp 0.6s cubic-bezier(0.2, 0.8, 0.2, 1) backwards;
+  }
+  .view.active .anim-in:nth-child(2) { animation-delay: 0.05s; }
+  .view.active .anim-in:nth-child(3) { animation-delay: 0.1s; }
+  .view.active .anim-in:nth-child(4) { animation-delay: 0.15s; }
+  .view.active .anim-in:nth-child(5) { animation-delay: 0.2s; }
+  @keyframes slideUp {
+    from { opacity: 0; transform: translateY(20px); }
+    to { opacity: 1; transform: translateY(0); }
+  }
+</style>
+</head>
+<body>
+
+<div class="app">
+
+  <!-- Demo banner -->
+  <div class="demo-banner">
+    <div class="demo-banner-inner">
+      <span>DEMO</span> Maquette de démonstration · Aucun produit commercialisé · Tous les comptes sont simulés <span>DEMO</span>
+    </div>
+  </div>
+
+  <!-- View Switcher -->
+  <nav class="view-switcher">
+    <button class="active" data-view="landing">Landing</button>
+    <button data-view="trader">Dashboard Trader</button>
+    <button data-view="admin">Console Admin</button>
+  </nav>
+
+  <!-- ===== VIEW 1 : LANDING ===== -->
+  <section class="view active" id="landing">
+    <div class="landing">
+      <header class="landing-header anim-in">
+        <div class="logo">
+          <div class="logo-mark">
+            <svg viewBox="0 0 36 36" xmlns="http://www.w3.org/2000/svg">
+              <circle cx="18" cy="18" r="17" fill="none" stroke="#d4ff3a" stroke-width="1.5"/>
+              <circle cx="18" cy="18" r="11" fill="none" stroke="#d4ff3a" stroke-width="1.5"/>
+              <circle cx="18" cy="18" r="5" fill="none" stroke="#d4ff3a" stroke-width="1.5"/>
+              <circle cx="18" cy="18" r="2" fill="#d4ff3a"/>
+              <line x1="18" y1="0" x2="18" y2="6" stroke="#d4ff3a" stroke-width="1.5"/>
+              <line x1="18" y1="30" x2="18" y2="36" stroke="#d4ff3a" stroke-width="1.5"/>
+              <line x1="0" y1="18" x2="6" y2="18" stroke="#d4ff3a" stroke-width="1.5"/>
+              <line x1="30" y1="18" x2="36" y2="18" stroke="#d4ff3a" stroke-width="1.5"/>
+            </svg>
+          </div>
+          <div class="logo-text">AIMO<em>·</em>FIRM</div>
+        </div>
+        <nav class="nav-links">
+          <a href="#">Challenges</a>
+          <a href="#">Règles</a>
+          <a href="#">Payouts</a>
+          <a href="#">FAQ</a>
+          <a href="#">Login</a>
+        </nav>
+      </header>
+
+      <div class="hero">
+        <div class="anim-in">
+          <div class="hero-eyebrow">Saison 04 · Inscriptions ouvertes</div>
+          <h1>Visez. <em>Touchez.</em><br><span class="strike">Soyez payé.</span></h1>
+          <p class="hero-sub">Prouvez votre précision sur un challenge, accédez à un compte simulé jusqu'à 200 000 €, gardez jusqu'à 90% des profits générés. Aucun capital risqué de votre côté.</p>
+          <div class="hero-cta">
+            <a href="#" class="btn btn-primary">Commencer un challenge →</a>
+            <a href="#" class="btn btn-ghost">Voir les règles</a>
+          </div>
+        </div>
+        <div class="hero-visual anim-in">
+          <div class="ticker-grid">
+            <div class="ticker">
+              <div class="ticker-symbol">EUR/USD</div>
+              <div>
+                <div class="ticker-price">1.0847</div>
+                <div class="ticker-change up">+0.34%</div>
+              </div>
+            </div>
+            <div class="ticker">
+              <div class="ticker-symbol">XAU/USD</div>
+              <div>
+                <div class="ticker-price">2684.20</div>
+                <div class="ticker-change up">+1.12%</div>
+              </div>
+            </div>
+            <div class="ticker">
+              <div class="ticker-symbol">US500</div>
+              <div>
+                <div class="ticker-price">5847.40</div>
+                <div class="ticker-change down">-0.21%</div>
+              </div>
+            </div>
+            <div class="ticker">
+              <div class="ticker-symbol">NAS100</div>
+              <div>
+                <div class="ticker-price">20418.7</div>
+                <div class="ticker-change up">+0.58%</div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="stats-strip">
+        <div class="stat anim-in">
+          <div class="stat-label">Traders financés</div>
+          <div class="stat-value"><em>2</em>,847</div>
+        </div>
+        <div class="stat anim-in">
+          <div class="stat-label">Payouts versés</div>
+          <div class="stat-value"><em>€</em>4.2M</div>
+        </div>
+        <div class="stat anim-in">
+          <div class="stat-label">Profit-share max</div>
+          <div class="stat-value"><em>90</em>%</div>
+        </div>
+        <div class="stat anim-in">
+          <div class="stat-label">Délai payout</div>
+          <div class="stat-value"><em>24</em>h</div>
+        </div>
+      </div>
+
+      <section class="pricing-section">
+        <h2 class="section-title anim-in">Choisissez votre <em>cible</em>.</h2>
+        <div class="pricing-grid">
+          <div class="price-card anim-in">
+            <div class="price-tier">Starter</div>
+            <div class="price-amount"><sup>€</sup>89</div>
+            <div class="price-account">Compte 25,000 €</div>
+            <ul class="price-features">
+              <li>Objectif profit : 8%</li>
+              <li>Drawdown max : 5%</li>
+              <li>Drawdown daily : 4%</li>
+              <li>Profit split 80%</li>
+              <li>Pas de limite de temps</li>
+            </ul>
+            <a href="#" class="btn btn-ghost">Commencer</a>
+          </div>
+          <div class="price-card featured anim-in">
+            <div class="price-badge">Populaire</div>
+            <div class="price-tier">Standard</div>
+            <div class="price-amount"><sup>€</sup>299</div>
+            <div class="price-account">Compte 100,000 €</div>
+            <ul class="price-features">
+              <li>Objectif profit : 8%</li>
+              <li>Drawdown max : 5%</li>
+              <li>Drawdown daily : 4%</li>
+              <li>Profit split 85%</li>
+              <li>EA & news trading autorisés</li>
+              <li>Scaling jusqu'à 400 000 €</li>
+            </ul>
+            <a href="#" class="btn btn-primary">Commencer</a>
+          </div>
+          <div class="price-card anim-in">
+            <div class="price-tier">Pro</div>
+            <div class="price-amount"><sup>€</sup>549</div>
+            <div class="price-account">Compte 200,000 €</div>
+            <ul class="price-features">
+              <li>Objectif profit : 8%</li>
+              <li>Drawdown max : 6%</li>
+              <li>Drawdown daily : 5%</li>
+              <li>Profit split 90%</li>
+              <li>Tous instruments inclus</li>
+              <li>Account manager dédié</li>
+            </ul>
+            <a href="#" class="btn btn-ghost">Commencer</a>
+          </div>
+        </div>
+      </section>
+
+      <section class="features">
+        <h2 class="section-title anim-in">Pourquoi <em>AimoFirm</em>.</h2>
+        <div class="feature-grid">
+          <div class="feature anim-in">
+            <div class="feature-num">/ 01</div>
+            <h3>Évaluation transparente</h3>
+            <p>Toutes les règles sont publiées, sans piège caché. Si vous respectez les paramètres, vous passez. Pas de discrétion arbitraire de notre part.</p>
+          </div>
+          <div class="feature anim-in">
+            <div class="feature-num">/ 02</div>
+            <h3>Payouts en 24 heures</h3>
+            <p>Demandez votre payout à tout moment après la phase de validation. Versement sous 24h ouvrées. Crypto, virement SEPA ou wire.</p>
+          </div>
+          <div class="feature anim-in">
+            <div class="feature-num">/ 03</div>
+            <h3>Scaling progressif</h3>
+            <p>Maintenez la performance pendant 4 mois consécutifs et votre allocation double automatiquement, jusqu'à 2 000 000 € de capital simulé.</p>
+          </div>
+        </div>
+      </section>
+
+      <footer class="footer">
+        <div>© 2026 AimoFirm · Maquette de démonstration</div>
+        <div>Tous les comptes sont simulés. Aucun risque de capital.</div>
+      </footer>
+    </div>
+  </section>
+
+  <!-- ===== VIEW 2 : TRADER DASHBOARD ===== -->
+  <section class="view" id="trader">
+    <div class="trader-app">
+      <aside class="sidebar">
+        <div class="sidebar-section">
+          <div class="sidebar-label">Navigation</div>
+        </div>
+        <a href="#" class="sidebar-link active"><span>01</span><span>Dashboard</span></a>
+        <a href="#" class="sidebar-link"><span>02</span><span>Trades</span></a>
+        <a href="#" class="sidebar-link"><span>03</span><span>Performance</span></a>
+        <a href="#" class="sidebar-link"><span>04</span><span>Calendrier</span></a>
+        <a href="#" class="sidebar-link"><span>05</span><span>Payouts</span></a>
+        <div class="sidebar-section" style="margin-top: 40px;">
+          <div class="sidebar-label">Compte</div>
+        </div>
+        <a href="#" class="sidebar-link"><span>06</span><span>Paramètres</span></a>
+        <a href="#" class="sidebar-link"><span>07</span><span>Documents</span></a>
+        <a href="#" class="sidebar-link"><span>08</span><span>Support</span></a>
+      </aside>
+
+      <main class="trader-main">
+        <div class="page-header anim-in">
+          <div>
+            <div class="page-title">Bonjour, <em>Marc</em>.</div>
+            <div class="page-subtitle">Phase 2 · Compte 100K · Jour 14 sur 30</div>
+          </div>
+          <div class="account-pill">
+            <span class="status-dot"></span>
+            <div>
+              <div class="account-pill-label">Compte actif</div>
+              <div class="account-pill-value">AIM-100K-7842</div>
+            </div>
+          </div>
+        </div>
+
+        <div class="balance-block">
+          <div class="balance-main anim-in">
+            <div class="balance-eyebrow">Solde du compte</div>
+            <div class="balance-amount"><sup>€</sup>106,847.<span style="color:var(--text-dim);">23</span></div>
+            <div class="balance-change">
+              <span class="up">+€6,847.23 (+6.85%)</span>
+              <span class="meta">Objectif : +8% · Reste +€1,153 à générer</span>
+            </div>
+          </div>
+          <div class="balance-side anim-in">
+            <div class="balance-side-card">
+              <div class="balance-side-label">Equity</div>
+              <div class="balance-side-value">€107,140.10</div>
+              <div class="balance-side-meta">2 positions ouvertes</div>
+            </div>
+            <div class="balance-side-card">
+              <div class="balance-side-label">Drawdown actuel</div>
+              <div class="balance-side-value" style="color: var(--green);">2.14%</div>
+              <div class="balance-side-meta">Limite : 5.00%</div>
+            </div>
+          </div>
+        </div>
+
+        <div class="chart-card anim-in">
+          <div class="chart-header">
+            <div>
+              <div class="chart-title">Courbe d'equity</div>
+              <div style="color: var(--text-dim); font-size: 12px; margin-top: 4px;">14 derniers jours</div>
+            </div>
+            <div class="chart-tabs">
+              <button class="chart-tab">7J</button>
+              <button class="chart-tab active">14J</button>
+              <button class="chart-tab">30J</button>
+              <button class="chart-tab">ALL</button>
+            </div>
+          </div>
+          <div class="chart-area">
+            <svg viewBox="0 0 800 280" width="100%" height="100%" preserveAspectRatio="none">
+              <!-- Grid lines -->
+              <g stroke="#1f1f1f" stroke-width="1">
+                <line x1="0" y1="40" x2="800" y2="40"/>
+                <line x1="0" y1="100" x2="800" y2="100"/>
+                <line x1="0" y1="160" x2="800" y2="160"/>
+                <line x1="0" y1="220" x2="800" y2="220"/>
+              </g>
+              <!-- Target line -->
+              <line x1="0" y1="50" x2="800" y2="50" stroke="#d4ff3a" stroke-width="1" stroke-dasharray="4 4" opacity="0.5"/>
+              <text x="10" y="44" fill="#d4ff3a" font-family="JetBrains Mono" font-size="10" opacity="0.7">TARGET +8%</text>
+              <!-- Starting line -->
+              <line x1="0" y1="200" x2="800" y2="200" stroke="#555" stroke-width="1" stroke-dasharray="4 4" opacity="0.4"/>
+              <text x="10" y="194" fill="#888" font-family="JetBrains Mono" font-size="10" opacity="0.7">START 100K</text>
+
+              <!-- Equity area -->
+              <defs>
+                <linearGradient id="eqGrad" x1="0" y1="0" x2="0" y2="1">
+                  <stop offset="0%" stop-color="#d4ff3a" stop-opacity="0.3"/>
+                  <stop offset="100%" stop-color="#d4ff3a" stop-opacity="0"/>
+                </linearGradient>
+              </defs>
+              <path d="M 0 200 L 60 195 L 120 188 L 180 170 L 240 178 L 300 155 L 360 148 L 420 140 L 480 125 L 540 132 L 600 110 L 660 95 L 720 88 L 800 78 L 800 280 L 0 280 Z" fill="url(#eqGrad)"/>
+              <!-- Equity line -->
+              <path d="M 0 200 L 60 195 L 120 188 L 180 170 L 240 178 L 300 155 L 360 148 L 420 140 L 480 125 L 540 132 L 600 110 L 660 95 L 720 88 L 800 78" fill="none" stroke="#d4ff3a" stroke-width="2"/>
+              <!-- Last point -->
+              <circle cx="800" cy="78" r="5" fill="#d4ff3a"/>
+              <circle cx="800" cy="78" r="10" fill="#d4ff3a" opacity="0.3"/>
+            </svg>
+          </div>
+        </div>
+
+        <div class="rules-grid anim-in">
+          <div class="rule">
+            <div class="rule-header">
+              <div class="rule-name">Profit Target</div>
+              <div class="rule-status ok">85.6%</div>
+            </div>
+            <div class="rule-value">+€6,847</div>
+            <div class="rule-meta">sur €8,000 requis</div>
+            <div class="rule-bar"><div class="rule-bar-fill" style="width: 85.6%"></div></div>
+          </div>
+          <div class="rule">
+            <div class="rule-header">
+              <div class="rule-name">Daily Drawdown</div>
+              <div class="rule-status ok">SAFE</div>
+            </div>
+            <div class="rule-value">€1,240</div>
+            <div class="rule-meta">limite €4,000 (4%)</div>
+            <div class="rule-bar"><div class="rule-bar-fill" style="width: 31%"></div></div>
+          </div>
+          <div class="rule">
+            <div class="rule-header">
+              <div class="rule-name">Max Drawdown</div>
+              <div class="rule-status warn">42%</div>
+            </div>
+            <div class="rule-value">€2,140</div>
+            <div class="rule-meta">limite €5,000 (5%)</div>
+            <div class="rule-bar"><div class="rule-bar-fill warn" style="width: 42.8%"></div></div>
+          </div>
+          <div class="rule">
+            <div class="rule-header">
+              <div class="rule-name">Min Trading Days</div>
+              <div class="rule-status ok">14/5</div>
+            </div>
+            <div class="rule-value">14 jours</div>
+            <div class="rule-meta">minimum atteint</div>
+            <div class="rule-bar"><div class="rule-bar-fill" style="width: 100%"></div></div>
+          </div>
+        </div>
+
+        <div class="table-card anim-in">
+          <div class="table-card-header">
+            <div class="table-card-title">Trades récents</div>
+            <button class="btn btn-ghost" style="padding: 8px 16px; font-size: 11px;">Voir tout →</button>
+          </div>
+          <table>
+            <thead>
+              <tr>
+                <th>Symbole</th>
+                <th>Side</th>
+                <th>Volume</th>
+                <th>Entry</th>
+                <th>Exit</th>
+                <th>P&L</th>
+                <th>Date</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr>
+                <td class="symbol-cell">XAU/USD</td>
+                <td><span class="side-tag long">LONG</span></td>
+                <td>0.50 lot</td>
+                <td>2,672.40</td>
+                <td>2,684.20</td>
+                <td class="pnl up">+€590.00</td>
+                <td>04 Mai · 14:32</td>
+              </tr>
+              <tr>
+                <td class="symbol-cell">EUR/USD</td>
+                <td><span class="side-tag short">SHORT</span></td>
+                <td>1.20 lot</td>
+                <td>1.0892</td>
+                <td>1.0847</td>
+                <td class="pnl up">+€540.00</td>
+                <td>04 Mai · 09:18</td>
+              </tr>
+              <tr>
+                <td class="symbol-cell">US500</td>
+                <td><span class="side-tag long">LONG</span></td>
+                <td>0.30 lot</td>
+                <td>5,852.10</td>
+                <td>5,847.40</td>
+                <td class="pnl down">−€141.00</td>
+                <td>03 Mai · 16:44</td>
+              </tr>
+              <tr>
+                <td class="symbol-cell">NAS100</td>
+                <td><span class="side-tag long">LONG</span></td>
+                <td>0.20 lot</td>
+                <td>20,358.00</td>
+                <td>20,418.70</td>
+                <td class="pnl up">+€121.40</td>
+                <td>03 Mai · 11:02</td>
+              </tr>
+              <tr>
+                <td class="symbol-cell">GBP/JPY</td>
+                <td><span class="side-tag short">SHORT</span></td>
+                <td>0.80 lot</td>
+                <td>192.45</td>
+                <td>191.88</td>
+                <td class="pnl up">+€304.20</td>
+                <td>02 Mai · 15:30</td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </main>
+    </div>
+  </section>
+
+  <!-- ===== VIEW 3 : ADMIN ===== -->
+  <section class="view" id="admin">
+    <div class="trader-app">
+      <aside class="sidebar">
+        <div class="sidebar-section">
+          <div class="sidebar-label">Pilotage</div>
+        </div>
+        <a href="#" class="sidebar-link active"><span>01</span><span>Vue d'ensemble</span></a>
+        <a href="#" class="sidebar-link"><span>02</span><span>Traders</span></a>
+        <a href="#" class="sidebar-link"><span>03</span><span>Challenges</span></a>
+        <a href="#" class="sidebar-link"><span>04</span><span>Payouts</span></a>
+        <a href="#" class="sidebar-link"><span>05</span><span>Risk monitor</span></a>
+        <div class="sidebar-section" style="margin-top: 40px;">
+          <div class="sidebar-label">Business</div>
+        </div>
+        <a href="#" class="sidebar-link"><span>06</span><span>Revenus</span></a>
+        <a href="#" class="sidebar-link"><span>07</span><span>Marketing</span></a>
+        <a href="#" class="sidebar-link"><span>08</span><span>Compliance</span></a>
+      </aside>
+
+      <main class="trader-main">
+        <div class="page-header anim-in">
+          <div>
+            <div class="page-title">Console <em>admin</em></div>
+            <div class="page-subtitle">Vue temps réel · Mardi 5 mai 2026 · 14:42 CET</div>
+          </div>
+          <div class="account-pill">
+            <span class="status-dot"></span>
+            <div>
+              <div class="account-pill-label">Système</div>
+              <div class="account-pill-value">Opérationnel</div>
+            </div>
+          </div>
+        </div>
+
+        <div class="admin-grid anim-in">
+          <div class="admin-stat">
+            <div class="admin-stat-label">Traders actifs</div>
+            <div class="admin-stat-value">847</div>
+            <div class="admin-stat-trend up">↑ +24 cette semaine</div>
+          </div>
+          <div class="admin-stat">
+            <div class="admin-stat-label">Revenus / 30j</div>
+            <div class="admin-stat-value">€127K</div>
+            <div class="admin-stat-trend up">↑ +18.4%</div>
+          </div>
+          <div class="admin-stat">
+            <div class="admin-stat-label">Payouts en attente</div>
+            <div class="admin-stat-value">€42,180</div>
+            <div class="admin-stat-trend">12 demandes</div>
+          </div>
+          <div class="admin-stat">
+            <div class="admin-stat-label">Taux de réussite</div>
+            <div class="admin-stat-value">11.4%</div>
+            <div class="admin-stat-trend down">↓ -0.6%</div>
+          </div>
+        </div>
+
+        <div class="admin-twocol">
+          <div class="payout-list anim-in">
+            <div class="payout-list-header">
+              <div class="table-card-title" style="font-family: var(--display); font-size: 18px; font-weight: 600;">Payouts à valider</div>
+              <span style="color: var(--text-dim); font-size: 11px;">12 EN ATTENTE</span>
+            </div>
+            <div class="payout-row">
+              <div>
+                <div class="payout-trader">Marc Dubois</div>
+                <div class="payout-trader-id">AIM-100K-7842</div>
+              </div>
+              <div>
+                <div class="payout-amount">€5,820.50</div>
+                <div class="payout-meta">85% split</div>
+              </div>
+              <div class="payout-meta">SEPA · IBAN ****4521</div>
+              <div style="display: flex; gap: 6px;">
+                <button class="payout-action">Valider</button>
+                <button class="payout-action deny">×</button>
+              </div>
+            </div>
+            <div class="payout-row">
+              <div>
+                <div class="payout-trader">Sofia Hernandez</div>
+                <div class="payout-trader-id">AIM-200K-3104</div>
+              </div>
+              <div>
+                <div class="payout-amount">€12,420.00</div>
+                <div class="payout-meta">90% split</div>
+              </div>
+              <div class="payout-meta">USDT · TRC20</div>
+              <div style="display: flex; gap: 6px;">
+                <button class="payout-action">Valider</button>
+                <button class="payout-action deny">×</button>
+              </div>
+            </div>
+            <div class="payout-row">
+              <div>
+                <div class="payout-trader">Lucas Bernard</div>
+                <div class="payout-trader-id">AIM-50K-8821</div>
+              </div>
+              <div>
+                <div class="payout-amount">€2,140.80</div>
+                <div class="payout-meta">80% split</div>
+              </div>
+              <div class="payout-meta">SEPA · IBAN ****9087</div>
+              <div style="display: flex; gap: 6px;">
+                <button class="payout-action">Valider</button>
+                <button class="payout-action deny">×</button>
+              </div>
+            </div>
+            <div class="payout-row">
+              <div>
+                <div class="payout-trader">Aiko Tanaka</div>
+                <div class="payout-trader-id">AIM-100K-6612</div>
+              </div>
+              <div>
+                <div class="payout-amount">€4,890.20</div>
+                <div class="payout-meta">85% split</div>
+              </div>
+              <div class="payout-meta">Wire · USD</div>
+              <div style="display: flex; gap: 6px;">
+                <button class="payout-action">Valider</button>
+                <button class="payout-action deny">×</button>
+              </div>
+            </div>
+            <div class="payout-row">
+              <div>
+                <div class="payout-trader">Daniel Costa</div>
+                <div class="payout-trader-id">AIM-200K-2298</div>
+              </div>
+              <div>
+                <div class="payout-amount">€8,710.00</div>
+                <div class="payout-meta">90% split</div>
+              </div>
+              <div class="payout-meta">USDT · TRC20</div>
+              <div style="display: flex; gap: 6px;">
+                <button class="payout-action">Valider</button>
+                <button class="payout-action deny">×</button>
+              </div>
+            </div>
+          </div>
+
+          <div class="funnel-card anim-in">
+            <div style="font-family: var(--display); font-size: 18px; font-weight: 600; margin-bottom: 24px;">Funnel de conversion · 30j</div>
+            <div class="funnel-stage">
+              <div class="funnel-label">Visiteurs uniques</div>
+              <div class="funnel-bar"><div class="funnel-bar-fill" style="width: 100%;">48,210</div></div>
+            </div>
+            <div class="funnel-stage">
+              <div class="funnel-label">Inscriptions</div>
+              <div class="funnel-bar"><div class="funnel-bar-fill" style="width: 22%;">10,648</div></div>
+            </div>
+            <div class="funnel-stage">
+              <div class="funnel-label">Achat de challenge</div>
+              <div class="funnel-bar"><div class="funnel-bar-fill" style="width: 8.5%;">4,108</div></div>
+            </div>
+            <div class="funnel-stage">
+              <div class="funnel-label">Phase 1 réussie</div>
+              <div class="funnel-bar"><div class="funnel-bar-fill" style="width: 2.4%;">1,158</div></div>
+            </div>
+            <div class="funnel-stage">
+              <div class="funnel-label">Compte financé</div>
+              <div class="funnel-bar"><div class="funnel-bar-fill" style="width: 0.97%;">468</div></div>
+            </div>
+            <div style="margin-top: 24px; padding-top: 20px; border-top: 1px solid var(--border); display: grid; grid-template-columns: 1fr 1fr; gap: 16px;">
+              <div>
+                <div style="font-size: 10px; color: var(--text-dim); letter-spacing: 0.15em; margin-bottom: 4px;">CONVERSION GLOBALE</div>
+                <div style="font-size: 22px; font-weight: 700; color: var(--accent);">0.97%</div>
+              </div>
+              <div>
+                <div style="font-size: 10px; color: var(--text-dim); letter-spacing: 0.15em; margin-bottom: 4px;">CAC</div>
+                <div style="font-size: 22px; font-weight: 700;">€34</div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div class="table-card anim-in">
+          <div class="table-card-header">
+            <div class="table-card-title">Top traders · 30 derniers jours</div>
+            <button class="btn btn-ghost" style="padding: 8px 16px; font-size: 11px;">Export CSV</button>
+          </div>
+          <table>
+            <thead>
+              <tr>
+                <th>Trader</th>
+                <th>Compte</th>
+                <th>Phase</th>
+                <th>Equity</th>
+                <th>P&L 30j</th>
+                <th>Drawdown</th>
+                <th>Statut</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr>
+                <td class="symbol-cell">Sofia Hernandez</td>
+                <td>200K</td>
+                <td>Funded</td>
+                <td>€224,840</td>
+                <td class="pnl up">+€24,840</td>
+                <td>1.8%</td>
+                <td><span class="side-tag long">ACTIVE</span></td>
+              </tr>
+              <tr>
+                <td class="symbol-cell">Daniel Costa</td>
+                <td>200K</td>
+                <td>Funded</td>
+                <td>€217,420</td>
+                <td class="pnl up">+€17,420</td>
+                <td>2.4%</td>
+                <td><span class="side-tag long">ACTIVE</span></td>
+              </tr>
+              <tr>
+                <td class="symbol-cell">Aiko Tanaka</td>
+                <td>100K</td>
+                <td>Funded</td>
+                <td>€112,680</td>
+                <td class="pnl up">+€12,680</td>
+                <td>2.1%</td>
+                <td><span class="side-tag long">ACTIVE</span></td>
+              </tr>
+              <tr>
+                <td class="symbol-cell">Marc Dubois</td>
+                <td>100K</td>
+                <td>Phase 2</td>
+                <td>€106,847</td>
+                <td class="pnl up">+€6,847</td>
+                <td>2.1%</td>
+                <td><span class="side-tag long">ACTIVE</span></td>
+              </tr>
+              <tr>
+                <td class="symbol-cell">Lucas Bernard</td>
+                <td>50K</td>
+                <td>Funded</td>
+                <td>€52,140</td>
+                <td class="pnl up">+€2,140</td>
+                <td>3.2%</td>
+                <td><span class="side-tag long">ACTIVE</span></td>
+              </tr>
+              <tr>
+                <td class="symbol-cell">Yuki Watanabe</td>
+                <td>100K</td>
+                <td>Phase 1</td>
+                <td>€98,420</td>
+                <td class="pnl down">−€1,580</td>
+                <td>4.7%</td>
+                <td><span class="side-tag short">RISK</span></td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </main>
+    </div>
+  </section>
+
+</div>
+
+<script>
+  // View switcher
+  const buttons = document.querySelectorAll('.view-switcher button');
+  const views = document.querySelectorAll('.view');
+  buttons.forEach(btn => {
+    btn.addEventListener('click', () => {
+      const target = btn.dataset.view;
+      buttons.forEach(b => b.classList.remove('active'));
+      btn.classList.add('active');
+      views.forEach(v => v.classList.remove('active'));
+      document.getElementById(target).classList.add('active');
+      window.scrollTo({ top: 0, behavior: 'smooth' });
+    });
+  });
+
+  // Chart tabs (cosmétique uniquement)
+  document.querySelectorAll('.chart-tab').forEach(tab => {
+    tab.addEventListener('click', () => {
+      tab.parentElement.querySelectorAll('.chart-tab').forEach(t => t.classList.remove('active'));
+      tab.classList.add('active');
+    });
+  });
+
+  // Live ticker simulation
+  const tickers = document.querySelectorAll('.ticker-price');
+  setInterval(() => {
+    tickers.forEach(t => {
+      const cur = parseFloat(t.textContent.replace(',', ''));
+      const change = (Math.random() - 0.5) * cur * 0.0008;
+      const newVal = cur + change;
+      const decimals = cur > 1000 ? 2 : 4;
+      t.textContent = newVal.toLocaleString('en-US', { minimumFractionDigits: decimals, maximumFractionDigits: decimals });
+    });
+  }, 2000);
+</script>
+
+</body>
+</html>
